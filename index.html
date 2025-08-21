@@ -6,7 +6,7 @@
     <title>Interview Progress Tracker</title>
     <style>
         * {
-            margin: 0;68a68ef9d0ea881f405ed7a1
+            margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
@@ -425,6 +425,8 @@
             <div class="progress-bar-container">
                 <div class="progress-bar" id="progressBar" style="width: 0%"></div>
             </div>
+            <button class="btn" onclick="showDataDebug()" style="margin-top: 10px;">🔍 View Raw Data</button>
+            <button class="btn" onclick="testJSONBinWrite()" style="margin-top: 10px;">🧪 Test JSONBin Write</button>
         </div>
 
         <div class="lights-grid" id="lightsGrid">
@@ -533,8 +535,22 @@
                 
                 const data = await response.json();
                 console.log('📡 Raw data from JSONBin:', data);
+                console.log('📡 data.record:', data.record);
+                console.log('📡 Full response structure:', Object.keys(data));
                 
-                const interviews = data.record?.interviews || {};
+                // Handle different response structures
+                let interviews = {};
+                if (data.record && data.record.interviews) {
+                    interviews = data.record.interviews;
+                    console.log('📝 Using data.record.interviews');
+                } else if (data.interviews) {
+                    interviews = data.interviews;
+                    console.log('📝 Using data.interviews');
+                } else {
+                    console.log('❌ No interviews found in any expected location');
+                    console.log('📝 Available keys:', Object.keys(data));
+                }
+                
                 console.log('📝 Processed interviews:', interviews);
                 
                 // Clear current state
@@ -622,6 +638,23 @@
                 
                 const result = await response.json();
                 console.log('✅ Save successful:', result);
+                console.log('🔗 Data saved to JSONBin.io - Request count should increase');
+                
+                // Verify save by immediately reading back
+                setTimeout(async () => {
+                    try {
+                        const verifyResponse = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
+                            method: 'GET',
+                            headers: {
+                                'X-Access-Key': JSONBIN_API_KEY
+                            }
+                        });
+                        const verifyData = await verifyResponse.json();
+                        console.log('🔍 Verification - Data after save:', verifyData.record);
+                    } catch (e) {
+                        console.error('❌ Verification failed:', e);
+                    }
+                }, 1000);
                 
                 // Also save locally as backup
                 saveLocalData();
@@ -803,6 +836,75 @@
                 }).onfinish = () => {
                     confetti.remove();
                 };
+            }
+        }
+
+        // Test JSONBin.io write capability
+        async function testJSONBinWrite() {
+            try {
+                console.log('🧪 Testing JSONBin.io write capability...');
+                
+                const testData = {
+                    interviews: {
+                        "test": {
+                            students: ["Test Student"],
+                            timestamp: new Date().toISOString()
+                        }
+                    }
+                };
+                
+                const response = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
+                    method: 'PUT',
+                    headers: {
+                        'X-Access-Key': JSONBIN_API_KEY,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(testData)
+                });
+                
+                console.log('🧪 Test response status:', response.status);
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    console.log('✅ Test write successful:', result);
+                    alert('✅ JSONBin.io write test PASSED! Your API key can save data.');
+                } else {
+                    const errorText = await response.text();
+                    console.error('❌ Test write failed:', response.status, errorText);
+                    alert('❌ JSONBin.io write test FAILED!\nStatus: ' + response.status + '\nError: ' + errorText);
+                }
+            } catch (error) {
+                console.error('❌ Test write error:', error);
+                alert('❌ Test write error: ' + error.message);
+            }
+        }
+
+        // Show raw data for debugging
+        async function showDataDebug() {
+            try {
+                const response = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
+                    method: 'GET',
+                    headers: {
+                        'X-Access-Key': JSONBIN_API_KEY
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Raw response for debug:', data);
+                    
+                    // Try to display the data structure
+                    let displayData = data;
+                    if (data.record) {
+                        displayData = data.record;
+                    }
+                    
+                    alert('Raw Data Structure:\n\n' + JSON.stringify(data, null, 2) + '\n\nRecord Data:\n\n' + JSON.stringify(displayData, null, 2));
+                } else {
+                    alert('Error loading data: ' + response.status);
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
             }
         }
 
