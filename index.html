@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interview Progress Tracker - Cloud Edition</title>
+    <title>Interview Progress Tracker</title>
     <style>
         * {
             margin: 0;
@@ -38,40 +38,6 @@
             font-size: 1.2em;
             margin-bottom: 40px;
             animation: fadeInUp 1s ease-out 0.3s both;
-        }
-
-        .cloud-status {
-            background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            padding: 15px;
-            margin-bottom: 20px;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        .status-indicator {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: #00ff00;
-            animation: pulse 2s infinite;
-        }
-
-        .status-indicator.loading {
-            background: #ffaa00;
-        }
-
-        .status-indicator.error {
-            background: #ff4444;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
         }
 
         .progress-stats {
@@ -363,25 +329,6 @@
             color: white;
         }
 
-        .setup-banner {
-            background: rgba(255, 193, 7, 0.9);
-            color: #333;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            font-weight: 600;
-        }
-
-        .setup-banner a {
-            color: #0066cc;
-            text-decoration: none;
-            font-weight: bold;
-        }
-
-        .setup-banner a:hover {
-            text-decoration: underline;
-        }
-
         .loading-overlay {
             display: none;
             position: fixed;
@@ -460,8 +407,6 @@
         <h1>🎓 Student Interview Progress Tracker</h1>
         <p class="subtitle">Real-time cloud synchronization across all devices</p>
         
-
-
         <div class="progress-stats">
             <div class="stats-grid">
                 <div class="stat-item">
@@ -500,43 +445,12 @@
         </div>
     </div>
 
-    <!-- Setup Instructions Modal -->
-    <div id="setupModal" class="modal">
-        <div class="modal-content" style="max-width: 600px;">
-            <span class="close" onclick="hideSetupModal()">&times;</span>
-            <h3>🔧 Cloud Setup Instructions</h3>
-            <div style="text-align: left; color: rgba(255,255,255,0.9); line-height: 1.6;">
-                <p><strong>Step 1:</strong> Create a Google Sheet</p>
-                <p>• Go to <a href="https://sheets.google.com" target="_blank">sheets.google.com</a></p>
-                <p>• Create a new sheet named "Interview Tracker"</p>
-                <p>• Add headers: A1="Interview", B1="Student1", C1="Student2", D1="Student3", E1="Timestamp"</p>
-                
-                <p style="margin-top: 15px;"><strong>Step 2:</strong> Make it Public</p>
-                <p>• Click "Share" button</p>
-                <p>• Change to "Anyone with the link" can edit</p>
-                <p>• Copy the share link</p>
-                
-                <p style="margin-top: 15px;"><strong>Step 3:</strong> Update Code</p>
-                <p>• Replace SHEET_ID in the code with your sheet ID</p>
-                <p>• The sheet ID is the long string in your Google Sheets URL</p>
-                
-                <p style="margin-top: 15px;"><strong>Example:</strong></p>
-                <p style="font-size: 0.9em; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 5px;">
-                URL: https://docs.google.com/spreadsheets/d/<span style="color: #FFD700;">1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms</span>/edit<br>
-                Sheet ID: <span style="color: #FFD700;">1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms</span>
-                </p>
-            </div>
-            <button class="btn" onclick="hideSetupModal()">Got it!</button>
-        </div>
-    </div>
-
     <div class="celebration" id="celebration"></div>
 
     <script>
         // JSONBin.io configuration
         const JSONBIN_API_KEY = '$2a$10$u1rvwnQWANzu1n7Q60Wqm.pPCLy/ukporBG9JSQuVFmqPCIZPotOq';
         const JSONBIN_BIN_ID = '68a68440d0ea881f405ed037';
-        const SHEET_NAME = 'Sheet1';
         
         let currentLightIndex = null;
         const lightStates = {};
@@ -572,26 +486,26 @@
 
         // Check cloud connection
         function checkCloudConnection() {
-            const indicator = document.getElementById('statusIndicator');
-            const statusText = document.getElementById('statusText');
-            
-            if (SHEET_ID === 'YOUR_GOOGLE_SHEET_ID_HERE') {
-                indicator.className = 'status-indicator loading';
-                statusText.textContent = 'Initializing cloud connection...';
+            // Test JSONBin.io connection
+            fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
+                method: 'GET',
+                headers: {
+                    'X-Master-Key': JSONBIN_API_KEY
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    console.log('✅ JSONBin.io connected successfully');
+                    isOnline = true;
+                } else {
+                    console.error('❌ JSONBin.io connection failed:', response.status);
+                    isOnline = false;
+                }
+            })
+            .catch(error => {
+                console.error('❌ JSONBin.io connection error:', error);
                 isOnline = false;
-                return;
-            }
-            
-            // Test connection to Google Sheets
-            indicator.className = 'status-indicator loading';
-            statusText.textContent = 'Connecting to cloud...';
-            
-            // Simulate connection check
-            setTimeout(() => {
-                indicator.className = 'status-indicator';
-                statusText.textContent = 'Connected to cloud ✓';
-                isOnline = true;
-            }, 2000);
+            });
         }
 
         // Load data from JSONBin.io
@@ -858,15 +772,6 @@
             overlay.style.display = show ? 'flex' : 'none';
         }
 
-        // Setup instructions
-        function showSetupInstructions() {
-            document.getElementById('setupModal').style.display = 'block';
-        }
-
-        function hideSetupModal() {
-            document.getElementById('setupModal').style.display = 'none';
-        }
-
         // Create celebration animation
         function createCelebration() {
             const celebration = document.getElementById('celebration');
@@ -916,12 +821,8 @@
         document.querySelector('.close').onclick = hideModal;
         window.onclick = function(event) {
             const modal = document.getElementById('studentModal');
-            const setupModal = document.getElementById('setupModal');
             if (event.target == modal) {
                 hideModal();
-            }
-            if (event.target == setupModal) {
-                hideSetupModal();
             }
         };
 
