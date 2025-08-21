@@ -534,7 +534,7 @@
 
     <script>
         // ⚠️ REPLACE THIS WITH YOUR GOOGLE SHEET ID ⚠️
-        const SHEET_ID = 'YOUR_GOOGLE_SHEET_ID_HERE';
+        const SHEET_ID = '1wZNpwKcAmrnGae-Lo0-oe2VYrNxNM5eqBSaAQ1pRBzU';
         const SHEET_NAME = 'Sheet1';
         
         let currentLightIndex = null;
@@ -574,7 +574,7 @@
             const indicator = document.getElementById('statusIndicator');
             const statusText = document.getElementById('statusText');
             
-            if (SHEET_ID === 'YOUR_GOOGLE_SHEET_ID_HERE') {
+            if (SHEET_ID === '1wZNpwKcAmrnGae-Lo0-oe2VYrNxNM5eqBSaAQ1pRBzU') {
                 indicator.className = 'status-indicator loading';
                 statusText.textContent = 'Initializing cloud connection...';
                 isOnline = false;
@@ -595,7 +595,7 @@
 
         // Load data from Google Sheets
         async function loadCloudData() {
-            if (!isOnline || SHEET_ID === 'YOUR_GOOGLE_SHEET_ID_HERE') {
+            if (!isOnline || SHEET_ID === '1wZNpwKcAmrnGae-Lo0-oe2VYrNxNM5eqBSaAQ1pRBzU') {
                 return loadLocalData();
             }
             
