@@ -574,16 +574,41 @@
             document.getElementById('progressBar').style.width = percentage + '%';
         }
 
-        // Save data to memory (simulating persistence)
+        // Save data to localStorage for persistence
         function saveData() {
-            // In a real application, this would save to a database
-            // For this demo, data persists only during the session
+            localStorage.setItem('interviewTrackerData', JSON.stringify(lightStates));
         }
 
-        // Load saved data
+        // Load saved data from localStorage
         function loadSavedData() {
-            // In a real application, this would load from a database
-            // For this demo, we start fresh each time
+            const savedData = localStorage.getItem('interviewTrackerData');
+            if (savedData) {
+                const parsedData = JSON.parse(savedData);
+                Object.assign(lightStates, parsedData);
+                
+                // Restore the visual state of lights
+                Object.keys(lightStates).forEach(index => {
+                    const data = lightStates[index];
+                    if (data.completed) {
+                        // Light up the bulb
+                        const bulb = document.querySelector(`#lightsGrid .light-container:nth-child(${index}) .light-bulb`);
+                        const container = document.querySelector(`#lightsGrid .light-container:nth-child(${index})`);
+                        
+                        if (bulb && container) {
+                            bulb.classList.remove('off');
+                            bulb.classList.add('on');
+                            container.classList.add('completed');
+                            
+                            // Display student names
+                            const namesDiv = document.getElementById(`names-${index}`);
+                            if (namesDiv && data.students) {
+                                namesDiv.innerHTML = data.students.join('<br>');
+                                namesDiv.classList.add('has-names');
+                            }
+                        }
+                    }
+                });
+            }
         }
 
         // Modal event listeners
