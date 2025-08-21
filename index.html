@@ -533,7 +533,7 @@
     <div class="celebration" id="celebration"></div>
 
     <script>
-        // ⚠️ REPLACE THIS WITH YOUR GOOGLE SHEET ID ⚠️
+        // Google Sheet ID for cloud storage
         const SHEET_ID = '1wZNpwKcAmrnGae-Lo0-oe2VYrNxNM5eqBSaAQ1pRBzU';
         const SHEET_NAME = 'Sheet1';
         
@@ -574,7 +574,7 @@
             const indicator = document.getElementById('statusIndicator');
             const statusText = document.getElementById('statusText');
             
-            if (SHEET_ID === '1wZNpwKcAmrnGae-Lo0-oe2VYrNxNM5eqBSaAQ1pRBzU') {
+            if (SHEET_ID === 'YOUR_GOOGLE_SHEET_ID_HERE') {
                 indicator.className = 'status-indicator loading';
                 statusText.textContent = 'Initializing cloud connection...';
                 isOnline = false;
@@ -595,7 +595,7 @@
 
         // Load data from Google Sheets
         async function loadCloudData() {
-            if (!isOnline || SHEET_ID === '1wZNpwKcAmrnGae-Lo0-oe2VYrNxNM5eqBSaAQ1pRBzU') {
+            if (!isOnline) {
                 return loadLocalData();
             }
             
@@ -639,13 +639,8 @@
                 updateVisualState();
                 updateStats();
                 
-                const statusText = document.getElementById('statusText');
-                statusText.textContent = `Synced with cloud ✓ (${new Date().toLocaleTimeString()})`;
-                
             } catch (error) {
                 console.error('Cloud sync error:', error);
-                const statusText = document.getElementById('statusText');
-                statusText.textContent = 'Cloud sync failed - Using local data';
                 loadLocalData();
             } finally {
                 showLoading(false);
@@ -654,20 +649,16 @@
 
         // Save data to Google Sheets
         async function saveToCloud(interviewNum, students) {
-            if (!isOnline || SHEET_ID === 'YOUR_GOOGLE_SHEET_ID_HERE') {
+            if (!isOnline) {
                 return saveLocalData();
             }
             
             try {
                 // For demonstration, we'll show success
                 // In reality, you'd need Google Apps Script or backend service
-                const statusText = document.getElementById('statusText');
-                statusText.textContent = 'Saving to cloud...';
                 
                 // Simulate save delay
                 await new Promise(resolve => setTimeout(resolve, 1000));
-                
-                statusText.textContent = 'Saved to cloud ✓';
                 
                 // Also save locally as backup
                 saveLocalData();
@@ -675,8 +666,6 @@
                 return true;
             } catch (error) {
                 console.error('Save to cloud failed:', error);
-                const statusText = document.getElementById('statusText');
-                statusText.textContent = 'Save failed - Saved locally';
                 saveLocalData();
                 return false;
             }
