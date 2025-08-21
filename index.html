@@ -465,8 +465,8 @@
             loadCloudData();
             updateStats();
             
-            // Auto-refresh data every 10 seconds for real-time updates
-            setInterval(loadCloudData, 10000);
+            // Remove auto-refresh to reduce API calls
+            // Data will only load on page load and when lights are toggled
         }
 
         // Create 20 lights
@@ -722,17 +722,20 @@
         }
 
         // Toggle light on/off
-        function toggleLight(index) {
+        async function toggleLight(index) {
             const bulb = document.querySelector(`#lightsGrid .light-container:nth-child(${index}) .light-bulb`);
             
             if (bulb.classList.contains('off')) {
+                // Before showing modal, refresh data to get latest state
+                await loadCloudData();
+                
                 // Turn on light - show modal for student names
                 currentLightIndex = index;
                 showModal();
             } else {
                 // Turn off light - remove from cloud and local
                 delete lightStates[index];
-                saveToCloud(index, []);
+                await saveToCloud(index, []);
                 updateVisualState();
                 updateStats();
             }
@@ -837,6 +840,12 @@
                     confetti.remove();
                 };
             }
+        }
+
+        // Manual refresh function
+        async function manualRefresh() {
+            console.log('Manual refresh requested');
+            await loadCloudData();
         }
 
         // Test JSONBin.io write capability
