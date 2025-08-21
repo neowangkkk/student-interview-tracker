@@ -519,7 +519,7 @@
             
             try {
                 showLoading(true);
-                console.log('🔄 Loading data from JSONBin.io...');
+                console.log('Loading data from JSONBin.io...');
                 
                 // Fetch data from JSONBin.io
                 const response = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
@@ -534,49 +534,39 @@
                 }
                 
                 const data = await response.json();
-                console.log('📡 Raw data from JSONBin:', data);
-                console.log('📡 data.record:', data.record);
-                console.log('📡 Full response structure:', Object.keys(data));
-                
-                // Handle different response structures
-                let interviews = {};
-                if (data.record && data.record.interviews) {
-                    interviews = data.record.interviews;
-                    console.log('📝 Using data.record.interviews');
-                } else if (data.interviews) {
-                    interviews = data.interviews;
-                    console.log('📝 Using data.interviews');
-                } else {
-                    console.log('❌ No interviews found in any expected location');
-                    console.log('📝 Available keys:', Object.keys(data));
-                }
-                
-                console.log('📝 Processed interviews:', interviews);
+                console.log('Raw data received:', data);
                 
                 // Clear current state
                 Object.keys(lightStates).forEach(key => delete lightStates[key]);
                 
+                // Extract interviews from the response
+                let interviews = {};
+                if (data.record && data.record.interviews) {
+                    interviews = data.record.interviews;
+                } else if (data.interviews) {
+                    interviews = data.interviews;
+                }
+                
+                console.log('Interviews found:', interviews);
+                
                 // Load saved interviews
                 Object.keys(interviews).forEach(interviewNum => {
                     const interviewData = interviews[interviewNum];
-                    console.log(`📋 Processing interview ${interviewNum}:`, interviewData);
-                    
                     if (interviewData && interviewData.students && interviewData.students.length > 0) {
                         lightStates[interviewNum] = {
                             completed: true,
                             students: interviewData.students
                         };
-                        console.log(`✅ Loaded interview ${interviewNum} with students:`, interviewData.students);
+                        console.log(`Loaded interview ${interviewNum} with students:`, interviewData.students);
                     }
                 });
                 
-                console.log('🎯 Final lightStates:', lightStates);
-                
+                console.log('Final lightStates:', lightStates);
                 updateVisualState();
                 updateStats();
                 
             } catch (error) {
-                console.error('❌ JSONBin.io sync error:', error);
+                console.error('JSONBin.io sync error:', error);
                 loadLocalData();
             } finally {
                 showLoading(false);
