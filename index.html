@@ -3,13 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Interview Progress Tracker</title>
+  <title>Student Interview Progress Tracker</title>
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
-    body{
-      font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
-      min-height:100vh;padding:20px;overflow-x:hidden}
+    body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);min-height:100vh;padding:20px;overflow-x:hidden}
     .container{max-width:1200px;margin:0 auto;text-align:center}
     h1{color:#fff;font-size:2.5em;margin-bottom:10px;text-shadow:2px 2px 4px rgba(0,0,0,.3)}
     .subtitle{color:rgba(255,255,255,.9);font-size:1.2em;margin-bottom:40px}
@@ -18,15 +15,17 @@
     .stat-item{color:#fff}
     .stat-number{font-size:2.5em;font-weight:700;display:block;color:#FFD700}
     .progress-bar-container{background:rgba(255,255,255,.2);height:12px;border-radius:6px;overflow:hidden;margin:10px 0}
-    .progress-bar{background:linear-gradient(90deg,#00f260,#0575e6);height:100%;border-radius:6px;transition:width .6s ease}
+    .progress-bar{background:linear-gradient(90deg,#00f260,#0575e6);height:100%;border-radius:6px;transition:width .8s ease;position:relative;overflow:hidden}
+    .progress-bar::after{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.4),transparent);animation:shimmer 2s infinite}
+    @keyframes shimmer{0%{left:-100%}100%{left:100%}}
     .lights-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:25px;max-width:1000px;margin:0 auto;padding:20px}
-    .light-container{background:rgba(255,255,255,.1);backdrop-filter:blur(10px);border-radius:20px;padding:25px;transition:all .3s ease;border:2px solid transparent;position:relative;overflow:hidden}
-    .light-container:hover{transform:translateY(-4px);box-shadow:0 15px 35px rgba(0,0,0,.3);border-color:rgba(255,255,255,.3)}
+    .light-container{background:rgba(255,255,255,.1);backdrop-filter:blur(10px);border-radius:20px;padding:25px;transition:all .4s ease;border:2px solid transparent;position:relative;overflow:hidden}
+    .light-container:hover{transform:translateY(-5px);box-shadow:0 15px 35px rgba(0,0,0,.3);border-color:rgba(255,255,255,.3)}
     .light-container.completed{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);border-color:#FFD700}
     .light-number{font-size:1.2em;font-weight:700;color:rgba(255,255,255,.85);margin-bottom:15px}
-    .light-bulb{width:80px;height:80px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;margin:0 auto 18px;transition:all .4s ease;cursor:pointer;position:relative;display:flex;align-items:center;justify-content:center}
-    .light-bulb.off{background:linear-gradient(145deg,#34495e,#2c3e50);box-shadow:inset 5px 5px 15px rgba(0,0,0,.3), inset -5px -5px 15px rgba(255,255,255,.08), 0 10px 20px rgba(0,0,0,.2)}
-    .light-bulb.on{background:linear-gradient(145deg,#f39c12,#e67e22);box-shadow:0 0 30px rgba(243,156,18,.6),0 0 60px rgba(243,156,18,.4),0 0 90px rgba(243,156,18,.25), inset 2px 2px 10px rgba(255,255,255,.3)}
+    .light-bulb{width:80px;height:80px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;margin:0 auto 18px;transition:all .5s ease;cursor:pointer;position:relative;display:flex;align-items:center;justify-content:center}
+    .light-bulb.off{background:linear-gradient(145deg,#34495e,#2c3e50);box-shadow:inset 5px 5px 15px rgba(0,0,0,.3),inset -5px -5px 15px rgba(255,255,255,.08),0 10px 20px rgba(0,0,0,.2)}
+    .light-bulb.on{background:linear-gradient(145deg,#f39c12,#e67e22);box-shadow:0 0 30px rgba(243,156,18,.6),0 0 60px rgba(243,156,18,.4),0 0 90px rgba(243,156,18,.25),inset 2px 2px 10px rgba(255,255,255,.3)}
     .light-bulb::before{content:'';position:absolute;width:20px;height:8px;background:#34495e;bottom:-4px;border-radius:10px}
     .student-names{min-height:40px;color:#fff;font-size:.95em;line-height:1.4;margin-top:10px;padding:10px;background:rgba(0,0,0,.2);border-radius:10px;border:1px dashed rgba(255,255,255,.3)}
     .student-names.has-names{background:rgba(0,200,100,.28);border-color:rgba(0,255,150,.5)}
@@ -40,7 +39,8 @@
     .loading-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.45);z-index:999;justify-content:center;align-items:center}
     .loading-spinner{width:50px;height:50px;border:5px solid rgba(255,255,255,.3);border-top:5px solid #fff;border-radius:50%;animation:spin 1s linear infinite}
     @keyframes spin{to{transform:rotate(360deg)}}
-    @media(max-width:768px){.lights-grid{grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:15px}h1{font-size:2em}.light-bulb{width:60px;height:60px}}
+    .celebration{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:999}
+    @media (max-width:768px){.lights-grid{grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:15px}h1{font-size:2em}.light-bulb{width:60px;height:60px}}
   </style>
 </head>
 <body>
@@ -72,188 +72,103 @@
     </div>
   </div>
 
+  <div class="celebration" id="celebration"></div>
+
   <script>
-    // ================== JSONBin config ==================
+    // ===== JSONBin config =====
     const JSONBIN_API_KEY = '$2a$10$u1rvwnQWANzu1n7Q60Wqm.pPCLy/ukporBG9JSQuVFmqPCIZPotOq';
     const JSONBIN_BIN_ID  = '68a68ef9d0ea881f405ed7a1';
 
-    // ================== App State ==================
+    // ===== State =====
     let currentLightIndex = null;
-    const lightStates = {}; // { 1: { students: ['Sabrina'], completed: true }, ... }
+    const lightStates = {}; // {1:{students:[...], completed:true}, ...}
 
-    // ================== Helpers ==================
-    const qs = (sel, root=document) => root.querySelector(sel);
-    const qsa = (sel, root=document) => Array.from(root.querySelectorAll(sel));
-    const showLoading = (show) => { qs('#loadingOverlay').style.display = show ? 'flex' : 'none'; };
+    // ===== Utils =====
+    const qs  = (s, r=document) => r.querySelector(s);
+    const qsa = (s, r=document) => Array.from(r.querySelectorAll(s));
+    const showLoading = (v) => { qs('#loadingOverlay').style.display = v ? 'flex' : 'none'; };
     const clampIndex = (n) => Number.isFinite(n) && n>=1 && n<=20;
+    const escapeHtml = (str) => String(str)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
 
-    // ================== UI Build ==================
+    // ===== Build UI =====
     function createLights(){
       const grid = qs('#lightsGrid');
       for(let i=1;i<=20;i++){
         const card = document.createElement('div');
         card.className = 'light-container';
-        card.innerHTML = \`
-          <div class="light-number">Interview #\${i}</div>
-          <div class="light-bulb off" data-idx="\${i}"></div>
-          <div class="student-names" id="names-\${i}">Click the light when interview is complete!</div>\`;
+        card.innerHTML = `
+          <div class="light-number">Interview #${i}</div>
+          <div class="light-bulb off" data-idx="${i}"></div>
+          <div class="student-names" id="names-${i}">Click the light when interview is complete!</div>`;
         grid.appendChild(card);
       }
-      // click handlers
       qsa('.light-bulb').forEach(el=>el.addEventListener('click', async (e)=>{
         const idx = parseInt(e.currentTarget.getAttribute('data-idx'),10);
         await handleToggle(idx);
       }));
     }
 
-    function updateVisualState(){
-      // Reset all
-      for(let i=1;i<=20;i++){
-        const bulb = qs(\`#lightsGrid .light-container:nth-child(\${i}) .light-bulb\`);
-        const container = qs(\`#lightsGrid .light-container:nth-child(\${i})\`);
-        const namesDiv = qs(\`#names-\${i}\`);
-        if(bulb&&container&&namesDiv){
-          bulb.classList.add('off'); bulb.classList.remove('on');
-          container.classList.remove('completed');
-          namesDiv.textContent = 'Click the light when interview is complete!';
-          namesDiv.classList.remove('has-names');
-        }
-      }
-      // Apply saved numeric keys only
-      Object.keys(lightStates).forEach(key=>{
-        const idx = parseInt(key,10);
-        if(!clampIndex(idx)) return;
-        const data = lightStates[key] || {};
-        const students = Array.isArray(data.students) ? data.students.filter(Boolean) : [];
-        const done = !!data.completed || students.length>0;
-        if(!done) return;
-
-        const bulb = qs(\`#lightsGrid .light-container:nth-child(\${idx}) .light-bulb\`);
-        const container = qs(\`#lightsGrid .light-container:nth-child(\${idx})\`);
-        const namesDiv = qs(\`#names-\${idx}\`);
-        if(bulb&&container&&namesDiv){
-          bulb.classList.remove('off'); bulb.classList.add('on');
-          container.classList.add('completed');
-          if(students.length){
-            namesDiv.innerHTML = students.map(s=>escapeHtml(s)).join('<br>');
-            namesDiv.classList.add('has-names');
-          }
-        }
-      });
-    }
-
-    function updateStats(){
-      // Count numeric keys that are actually completed
-      const completed = Object.keys(lightStates).reduce((acc,key)=>{
-        const idx = parseInt(key,10);
-        if(!clampIndex(idx)) return acc;
-        const st = lightStates[key]||{};
-        const students = Array.isArray(st.students)?st.students.filter(Boolean):[];
-        return acc + (st.completed || students.length>0 ? 1 : 0);
-      },0);
-      const remaining = 20 - completed;
-      const pct = Math.round((completed/20)*100);
-      qs('#completedCount').textContent = completed;
-      qs('#remainingCount').textContent = remaining;
-      qs('#progressPercent').textContent = pct + '%';
-      qs('#progressBar').style.width = pct + '%';
-    }
-
-    function escapeHtml(str){
-      return String(str)
-        .replace(/&/g,'&amp;')
-        .replace(/</g,'&lt;')
-        .replace(/>/g,'&gt;')
-        .replace(/"/g,'&quot;')
-        .replace(/'/g,'&#039;');
-    }
-
-    // ================== Cloud I/O ==================
-    async function checkCloudConnection(){
-      try{
-        const res = await fetch(\`https://api.jsonbin.io/v3/b/\${JSONBIN_BIN_ID}/latest\`, {
-          method:'GET',
-          headers:{'X-Access-Key': JSONBIN_API_KEY}
-        });
-        return res.ok;
-      }catch(e){ return false; }
-    }
-
+    // ===== Cloud I/O =====
     async function loadCloudData(){
       try{
         showLoading(true);
-        const res = await fetch(\`https://api.jsonbin.io/v3/b/\${JSONBIN_BIN_ID}/latest\`, {
+        const res = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
           method:'GET',
-          headers:{'X-Access-Key': JSONBIN_API_KEY}
+          headers:{'X-Access-Key': JSONBIN_API_KEY},
+          cache: 'no-store'
         });
         if(!res.ok) throw new Error('HTTP '+res.status);
         const payload = await res.json();
-        const record = payload && payload.record ? payload.record : payload || {};
-        const interviews = (record && record.interviews) ? record.interviews : {};
+        const record = payload?.record ?? payload ?? {};
+        const interviews = record?.interviews ?? {};
 
-        // Reset and ingest only numeric keys with students
+        // reset and ingest
         Object.keys(lightStates).forEach(k=>delete lightStates[k]);
-        Object.keys(interviews).forEach(k=>{
-          const idx = parseInt(k,10);
-          if(!clampIndex(idx)) return; // ignore non-numeric keys like "test"
-          const entry = interviews[k] || {};
-          const students = Array.isArray(entry.students) ? entry.students.filter(Boolean) : [];
-          if(students.length){
-            lightStates[idx] = { completed:true, students };
-          }
-        });
+        for(const [raw, val] of Object.entries(interviews)){
+          const idx = parseInt(String(raw).trim(),10);
+          if(!clampIndex(idx)) continue;
+          const students = Array.isArray(val?.students) ? val.students.filter(s=>typeof s==='string' && s.trim().length) : [];
+          if(students.length){ lightStates[idx] = { completed:true, students }; }
+        }
         updateVisualState();
         updateStats();
-      }catch(err){
-        // Fallback to local storage if cloud read fails
+      }catch(e){
         loadLocalData();
-      }finally{
-        showLoading(false);
-      }
+      }finally{ showLoading(false); }
     }
 
     async function saveToCloud(interviewNum, students){
       try{
-        // 1) Read latest
-        const read = await fetch(\`https://api.jsonbin.io/v3/b/\${JSONBIN_BIN_ID}/latest\`, {
+        const read = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
           method:'GET',
-          headers:{'X-Access-Key': JSONBIN_API_KEY}
+          headers:{'X-Access-Key': JSONBIN_API_KEY},
+          cache: 'no-store'
         });
         let current = { interviews:{} };
         if(read.ok){
           const js = await read.json();
-          current = (js && js.record) ? js.record : current;
+          current = js.record || current;
           if(!current.interviews) current.interviews = {};
         }
-
-        // 2) Update one interview
         if(Array.isArray(students) && students.filter(Boolean).length){
-          current.interviews[String(interviewNum)] = {
-            students: students.filter(Boolean),
-            timestamp: new Date().toISOString()
-          };
+          current.interviews[String(interviewNum)] = { students: students.filter(Boolean), timestamp: new Date().toISOString() };
         }else{
           delete current.interviews[String(interviewNum)];
         }
-
-        // 3) Write back
-        const write = await fetch(\`https://api.jsonbin.io/v3/b/\${JSONBIN_BIN_ID}\`, {
+        const write = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
           method:'PUT',
-          headers:{
-            'X-Access-Key': JSONBIN_API_KEY,
-            'Content-Type':'application/json'
-          },
-          body: JSON.stringify(current)
+          headers:{'X-Access-Key': JSONBIN_API_KEY,'Content-Type':'application/json'},
+          body: JSON.stringify(current),
+          cache: 'no-store'
         });
         if(!write.ok) throw new Error('HTTP '+write.status);
-      }catch(e){
-        // If cloud fails, keep local state at least
-      }finally{
-        saveLocalData();
-      }
+      }catch(e){ /* keep local */ }
+      finally{ saveLocalData(); }
     }
 
-    // ================== Local storage ==================
+    // ===== Local storage =====
     function loadLocalData(){
       try{
         const raw = localStorage.getItem('interviewTrackerData');
@@ -276,16 +191,62 @@
       localStorage.setItem('interviewTrackerData', JSON.stringify(lightStates));
     }
 
-    // ================== Actions ==================
+    // ===== UI Logic =====
+    function updateVisualState(){
+      for(let i=1;i<=20;i++){
+        const bulb = qs(`#lightsGrid .light-container:nth-child(${i}) .light-bulb`);
+        const container = qs(`#lightsGrid .light-container:nth-child(${i})`);
+        const namesDiv = qs(`#names-${i}`);
+        if(bulb&&container&&namesDiv){
+          bulb.classList.add('off'); bulb.classList.remove('on');
+          container.classList.remove('completed');
+          namesDiv.textContent = 'Click the light when interview is complete!';
+          namesDiv.classList.remove('has-names');
+        }
+      }
+      Object.keys(lightStates).forEach(key=>{
+        const idx = Number(key);
+        const data = lightStates[key];
+        const students = Array.isArray(data?.students)?data.students.filter(Boolean):[];
+        const done = !!data?.completed || students.length>0;
+        if(!done || !clampIndex(idx)) return;
+        const bulb = qs(`#lightsGrid .light-container:nth-child(${idx}) .light-bulb`);
+        const container = qs(`#lightsGrid .light-container:nth-child(${idx})`);
+        const namesDiv = qs(`#names-${idx}`);
+        if(bulb&&container&&namesDiv){
+          bulb.classList.remove('off'); bulb.classList.add('on');
+          container.classList.add('completed');
+          if(students.length){
+            namesDiv.innerHTML = students.map(escapeHtml).join('<br>');
+            namesDiv.classList.add('has-names');
+          }
+        }
+      });
+    }
+
+    function updateStats(){
+      const completed = Object.keys(lightStates).reduce((acc,k)=>{
+        const idx=parseInt(k,10);
+        if(!clampIndex(idx)) return acc;
+        const st=lightStates[k]||{};
+        const s=Array.isArray(st.students)?st.students.filter(Boolean):[];
+        return acc + (st.completed||s.length>0?1:0);
+      },0);
+      const remaining = 20 - completed;
+      const pct = Math.round(completed/20*100);
+      qs('#completedCount').textContent = completed;
+      qs('#remainingCount').textContent = remaining;
+      qs('#progressPercent').textContent = pct+'%';
+      qs('#progressBar').style.width = pct+'%';
+    }
+
     async function handleToggle(index){
-      const bulb = qs(\`#lightsGrid .light-container:nth-child(\${index}) .light-bulb\`);
+      const bulb = qs(`#lightsGrid .light-container:nth-child(${index}) .light-bulb`);
       if(!bulb) return;
-      // If turning on -> open modal
       if(bulb.classList.contains('off')){
         currentLightIndex = index;
         openModal();
       }else{
-        // Turning off
         delete lightStates[index];
         updateVisualState();
         updateStats();
@@ -293,43 +254,53 @@
       }
     }
 
-    async function saveStudentNames(){
-      const inputs = [qs('#student1').value.trim(), qs('#student2').value.trim(), qs('#student3').value.trim()];
-      const students = inputs.filter(Boolean);
-      if(students.length===0){ alert('Please enter at least one student name.'); return; }
-      qs('#saveBtn').disabled = true;
-      // Update state
-      lightStates[currentLightIndex] = { completed:true, students };
-      updateVisualState();
-      updateStats();
-      await saveToCloud(currentLightIndex, students);
-      qs('#saveBtn').disabled = false;
-      closeModal();
-    }
-
-    // ================== Modal ==================
+    // ===== Modal & Save =====
     function openModal(){
-      qs('#student1').value = '';
-      qs('#student2').value = '';
-      qs('#student3').value = '';
-      qs('#studentModal').style.display = 'block';
-      setTimeout(()=>qs('#student1').focus(), 100);
+      qs('#student1').value=''; qs('#student2').value=''; qs('#student3').value='';
+      qs('#studentModal').style.display='block';
+      setTimeout(()=>qs('#student1').focus(),100);
     }
-    function closeModal(){ qs('#studentModal').style.display = 'none'; currentLightIndex = null; }
+    function closeModal(){ qs('#studentModal').style.display='none'; currentLightIndex=null; }
 
-    // ================== Init ==================
+    async function saveStudentNames(){
+      const inputs=[qs('#student1').value.trim(), qs('#student2').value.trim(), qs('#student3').value.trim()];
+      const students=inputs.filter(Boolean);
+      if(!students.length){ alert('Please enter at least one student name.'); return; }
+      qs('#saveBtn').disabled=true;
+      lightStates[currentLightIndex]={ completed:true, students };
+      updateVisualState(); updateStats();
+      await saveToCloud(currentLightIndex, students);
+      qs('#saveBtn').disabled=false; closeModal(); createCelebration();
+    }
+
+    // ===== Celebration =====
+    function createCelebration(){
+      const celebration = qs('#celebration');
+      for(let i=0;i<50;i++){
+        const d=document.createElement('div');
+        d.style.position='absolute'; d.style.width='10px'; d.style.height='10px';
+        d.style.backgroundColor=`hsl(${Math.random()*360},70%,60%)`;
+        d.style.left=Math.random()*100+'%'; d.style.top='-10px';
+        d.style.opacity='1'; d.style.borderRadius='50%';
+        celebration.appendChild(d);
+        const duration=Math.random()*3000+2000; const drift=(Math.random()-0.5)*200;
+        d.animate(
+          [{transform:'translateY(-10px) translateX(0px) rotate(0deg)',opacity:1},
+           {transform:`translateY(${window.innerHeight+50}px) translateX(${drift}px) rotate(720deg)`,opacity:0}],
+          {duration,easing:'cubic-bezier(0.25,0.46,0.45,0.94)'}
+        ).onfinish=()=>d.remove();
+      }
+    }
+
+    // ===== Init =====
     (async function init(){
       createLights();
-      // Try cloud; if unreachable, fall back to local
-      const ok = await checkCloudConnection();
-      if(ok){ await loadCloudData(); } else { loadLocalData(); }
-      // keyboard enter in modal
+      await loadCloudData(); // cloud-first with graceful fallback inside
       document.addEventListener('keypress', (e)=>{
         if(e.key==='Enter' && qs('#studentModal').style.display==='block'){ saveStudentNames(); }
       });
       qs('#closeModal').addEventListener('click', closeModal);
       qs('#saveBtn').addEventListener('click', saveStudentNames);
-      // Update stats initially
       updateStats();
     })();
   </script>
