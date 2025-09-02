@@ -76,7 +76,7 @@
 
   <script>
     // ===== Config =====
-    const TOTAL_LIGHTS   = 24; // <<— changed from 20 to 24
+    const TOTAL_LIGHTS    = 24; // supports 24 lights (your first 20 already exist)
     const JSONBIN_API_KEY = '$2a$10$u1rvwnQWANzu1n7Q60Wqm.pPCLy/ukporBG9JSQuVFmqPCIZPotOq';
     const JSONBIN_BIN_ID  = '68a68ef9d0ea881f405ed7a1';
 
@@ -142,6 +142,7 @@
 
     async function saveToCloud(interviewNum, students){
       try{
+        // Read latest, merge, write back
         const read = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
           method:'GET',
           headers:{'X-Access-Key': JSONBIN_API_KEY},
@@ -153,11 +154,13 @@
           current = js.record || current;
           if(!current.interviews) current.interviews = {};
         }
+
         if(Array.isArray(students) && students.filter(Boolean).length){
           current.interviews[String(interviewNum)] = { students: students.filter(Boolean), timestamp: new Date().toISOString() };
         }else{
           delete current.interviews[String(interviewNum)];
         }
+
         const write = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
           method:'PUT',
           headers:{'X-Access-Key': JSONBIN_API_KEY,'Content-Type':'application/json'},
@@ -165,8 +168,15 @@
           cache: 'no-store'
         });
         if(!write.ok) throw new Error('HTTP '+write.status);
-      }catch(e){ /* keep local */ }
-      finally{ saveLocalData(); }
+
+        // Persist local cache too
+        saveLocalData();
+        return true;
+      }catch(e){
+        console.error('Cloud save failed. Keeping local copy.', e);
+        saveLocalData();
+        return false;
+      }
     }
 
     // ===== Local storage =====
@@ -248,6 +258,7 @@
         currentLightIndex = index;
         openModal();
       }else{
+        // Turning off (clears students and cloud entry)
         delete lightStates[index];
         updateVisualState();
         updateStats();
@@ -267,11 +278,20 @@
       const inputs=[qs('#student1').value.trim(), qs('#student2').value.trim(), qs('#student3').value.trim()];
       const students=inputs.filter(Boolean);
       if(!students.length){ alert('Please enter at least one student name.'); return; }
-      qs('#saveBtn').disabled=true;
+      const btn = qs('#saveBtn');
+      btn.disabled=true;
+
+      // Update state immediately for snappy UI
       lightStates[currentLightIndex]={ completed:true, students };
       updateVisualState(); updateStats();
-      await saveToCloud(currentLightIndex, students);
-      qs('#saveBtn').disabled=false; closeModal(); createCelebration();
+
+      // Persist to cloud
+      const ok = await saveToCloud(currentLightIndex, students);
+
+      btn.disabled=false;
+      closeModal();
+      if(ok) createCelebration();
+      else alert('Saved locally. Cloud save failed — will show here but others may not see it yet.');
     }
 
     // ===== Celebration =====
@@ -293,5 +313,17 @@
       }
     }
 
-    // ===== Init =
-
+    // ===== Init =====
+    (async function init(){
+      createLights();
+      await loadCloudData(); // cloud-first with graceful fallback inside
+      document.addEventListener('keypress', (e)=>{
+        if(e.key==='Enter' && qs('#studentModal').style.display==='block'){ saveStudentNames(); }
+      });
+      qs('#closeModal').addEventListener('click', closeModal);
+      qs('#saveBtn').addEventListener('click', saveStudentNames);
+      updateStats();
+    })();
+  </script>
+</body>
+</html>
