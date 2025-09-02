@@ -18,7 +18,7 @@
     .progress-bar{background:linear-gradient(90deg,#00f260,#0575e6);height:100%;border-radius:6px;transition:width .8s ease;position:relative;overflow:hidden}
     .progress-bar::after{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.4),transparent);animation:shimmer 2s infinite}
     @keyframes shimmer{0%{left:-100%}100%{left:100%}}
-    .lights-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:25px;max-width:1000px;margin:0 auto;padding:20px}
+    .lights-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:25px;max-width:1100px;margin:0 auto;padding:20px}
     .light-container{background:rgba(255,255,255,.1);backdrop-filter:blur(10px);border-radius:20px;padding:25px;transition:all .4s ease;border:2px solid transparent;position:relative;overflow:hidden}
     .light-container:hover{transform:translateY(-5px);box-shadow:0 15px 35px rgba(0,0,0,.3);border-color:rgba(255,255,255,.3)}
     .light-container.completed{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);border-color:#FFD700}
@@ -51,7 +51,7 @@
     <div class="progress-stats">
       <div class="stats-grid">
         <div class="stat-item"><span class="stat-number" id="completedCount">0</span><span>Completed</span></div>
-        <div class="stat-item"><span class="stat-number" id="remainingCount">20</span><span>Remaining</span></div>
+        <div class="stat-item"><span class="stat-number" id="remainingCount">24</span><span>Remaining</span></div>
         <div class="stat-item"><span class="stat-number" id="progressPercent">0%</span><span>Progress</span></div>
       </div>
       <div class="progress-bar-container"><div class="progress-bar" id="progressBar" style="width:0%"></div></div>
@@ -75,7 +75,8 @@
   <div class="celebration" id="celebration"></div>
 
   <script>
-    // ===== JSONBin config =====
+    // ===== Config =====
+    const TOTAL_LIGHTS   = 24; // <<— changed from 20 to 24
     const JSONBIN_API_KEY = '$2a$10$u1rvwnQWANzu1n7Q60Wqm.pPCLy/ukporBG9JSQuVFmqPCIZPotOq';
     const JSONBIN_BIN_ID  = '68a68ef9d0ea881f405ed7a1';
 
@@ -87,7 +88,7 @@
     const qs  = (s, r=document) => r.querySelector(s);
     const qsa = (s, r=document) => Array.from(r.querySelectorAll(s));
     const showLoading = (v) => { qs('#loadingOverlay').style.display = v ? 'flex' : 'none'; };
-    const clampIndex = (n) => Number.isFinite(n) && n>=1 && n<=20;
+    const clampIndex = (n) => Number.isFinite(n) && n>=1 && n<=TOTAL_LIGHTS;
     const escapeHtml = (str) => String(str)
       .replace(/&/g,'&amp;').replace(/</g,'&lt;')
       .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
@@ -95,7 +96,7 @@
     // ===== Build UI =====
     function createLights(){
       const grid = qs('#lightsGrid');
-      for(let i=1;i<=20;i++){
+      for(let i=1;i<=TOTAL_LIGHTS;i++){
         const card = document.createElement('div');
         card.className = 'light-container';
         card.innerHTML = `
@@ -193,7 +194,7 @@
 
     // ===== UI Logic =====
     function updateVisualState(){
-      for(let i=1;i<=20;i++){
+      for(let i=1;i<=TOTAL_LIGHTS;i++){
         const bulb = qs(`#lightsGrid .light-container:nth-child(${i}) .light-bulb`);
         const container = qs(`#lightsGrid .light-container:nth-child(${i})`);
         const namesDiv = qs(`#names-${i}`);
@@ -232,8 +233,8 @@
         const s=Array.isArray(st.students)?st.students.filter(Boolean):[];
         return acc + (st.completed||s.length>0?1:0);
       },0);
-      const remaining = 20 - completed;
-      const pct = Math.round(completed/20*100);
+      const remaining = TOTAL_LIGHTS - completed;
+      const pct = Math.round((completed / TOTAL_LIGHTS) * 100);
       qs('#completedCount').textContent = completed;
       qs('#remainingCount').textContent = remaining;
       qs('#progressPercent').textContent = pct+'%';
@@ -292,17 +293,5 @@
       }
     }
 
-    // ===== Init =====
-    (async function init(){
-      createLights();
-      await loadCloudData(); // cloud-first with graceful fallback inside
-      document.addEventListener('keypress', (e)=>{
-        if(e.key==='Enter' && qs('#studentModal').style.display==='block'){ saveStudentNames(); }
-      });
-      qs('#closeModal').addEventListener('click', closeModal);
-      qs('#saveBtn').addEventListener('click', saveStudentNames);
-      updateStats();
-    })();
-  </script>
-</body>
-</html>
+    // ===== Init =
+
